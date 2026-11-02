@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#05070f" />
+    <title>PayPal Nexus AI — Transferencias internacionales sin comisiones</title>
+    <meta
+      name="description"
+      content="Nexus AI es un agente autónomo que absorbe las comisiones de PayPal en transferencias internacionales mediante micro-arbitraje de liquidez sobre tu motor de trading."
+    />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://www.paypal.com" crossorigin />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#transfer">Saltar al formulario de transferencia</a>
+
+    <div class="ambient" aria-hidden="true">
+      <div class="ambient-grid"></div>
+      <div class="glow glow-a"></div>
+      <div class="glow glow-b"></div>
+    </div>
+
+    <header class="topbar">
+      <div class="shell topbar-inner">
+        <a class="brand" href="#top" aria-label="PayPal Nexus AI, inicio">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="20" r="16.5" stroke="currentColor" stroke-opacity=".38" />
+              <ellipse cx="20" cy="20" rx="16" ry="6.5" transform="rotate(-32 20 20)" stroke="currentColor" stroke-opacity=".9" />
+              <ellipse cx="20" cy="20" rx="16" ry="6.5" transform="rotate(58 20 20)" stroke="currentColor" stroke-opacity=".55" />
+              <circle cx="20" cy="20" r="4.4" fill="currentColor" />
+              <circle cx="33" cy="11" r="2.2" fill="currentColor" />
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <strong>PayPal <span>Nexus</span> AI</strong>
+            <small>autonomous liquidity engine</small>
+          </span>
+        </a>
+
+        <nav class="topnav" aria-label="Navegación principal">
+          <a href="#transfer">Transferir</a>
+          <a href="#activity">Actividad</a>
+          <a href="#how">Cómo funciona</a>
+        </nav>
+
+        <div class="topbar-right">
+          <span id="mode-badge" class="badge badge-muted">Cargando…</span>
+          <button id="engine-pill" class="engine-pill" type="button" title="Verificar el estado del motor de trading">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <span id="engine-pill-text">Conectando…</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero shell" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> PayPal Hackathon · Build What’s Next with AI</p>
+          <h1 id="hero-title">Envía dinero al mundo.<br /><span class="grad-text">Paga $0.00 en comisiones.</span></h1>
+          <p class="lede">
+            Nexus es un agente autónomo que financia las tarifas de PayPal con micro-arbitraje de liquidez sobre tu
+            motor de trading. Tú transfieres; el agente absorbe el costo.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#transfer">
+              Optimizar una transferencia
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+            <a class="btn btn-ghost" href="#how">Ver cómo funciona</a>
+          </div>
+          <ul class="trust-row">
+            <li>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5 16 5v4.4c0 3.7-2.5 6.7-6 8.1-3.5-1.4-6-4.4-6-8.1V5l6-2.5Z" stroke="currentColor" stroke-width="1.3" /><path d="m7.4 9.9 1.8 1.8 3.4-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <span><strong>PayPal Sandbox</strong><small>entorno seguro</small></span>
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 14.5 7.2 9l3.1 3.1L17 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /><path d="M12.8 4.5H17v4.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <span><strong>Cobertura FX</strong><small>24/7 autónoma</small></span>
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.3" /><path d="M10 6v8M7.7 8.2c0-.9.9-1.5 2.3-1.5 1.5 0 2.3.7 2.3 1.6 0 2.4-4.6 1.1-4.6 3.6 0 1 .9 1.6 2.3 1.6 1.4 0 2.3-.6 2.3-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg>
+              <span><strong>$0.00</strong><small>tarifa al usuario</small></span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="hero-visual">
+          <div class="orbit-card">
+            <div class="orbit-head">
+              <span><i class="live-dot" aria-hidden="true"></i> Liquidity core</span>
+              <span id="hero-env">SANDBOX</span>
+            </div>
+            <div class="orbit-stage" aria-hidden="true">
+              <div class="orbit-ring ring-a"></div>
+              <div class="orbit-ring ring-b"></div>
+              <div class="orbit-ring ring-c"></div>
+              <div class="orbit-sweep"></div>
+              <div class="orbit-core">
+                <div class="core-glow"></div>
+                <span class="core-mark">N</span>
+                <small>NEXUS</small>
+              </div>
+              <span class="coin coin-usd">USD</span>
+              <span class="coin coin-eur">EUR</span>
+              <span class="coin coin-cop">COP</span>
+              <span class="coin coin-brl">BRL</span>
+              <span class="orbit-node node-a"></span>
+              <span class="orbit-node node-b"></span>
+              <span class="orbit-node node-c"></span>
+            </div>
+            <div class="orbit-metrics">
+              <div><span>Yield engine</span><strong id="metric-yield">—</strong></div>
+              <div><span>Profundidad</span><strong id="metric-liquidity">—</strong></div>
+              <div><span>Latencia</span><strong id="metric-latency">—</strong></div>
+            </div>
+          </div>
+          <div class="float-chip chip-a">
+            <span class="chip-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M10 2.5v3M10 14.5v3M2.5 10h3M14.5 10h3M4.7 4.7l2.1 2.1M13.2 13.2l2.1 2.1M15.3 4.7l-2.1 2.1M6.8 13.2l-2.1 2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" /></svg>
+            </span>
+            <span><strong id="chip-engine">Sincronizando</strong><small>motor de trading</small></span>
+          </div>
+          <div class="float-chip chip-b">
+            <span class="chip-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v14M6.5 6.2h5.2a2.4 2.4 0 0 1 0 4.8H8.3a2.4 2.4 0 0 0 0 4.8h5.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" /></svg>
+            </span>
+            <span><strong>$0.00</strong><small>comisión absorbida</small></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="transfer" class="workspace shell" aria-labelledby="transfer-title">
+        <div class="section-head">
+          <p class="kicker"><span>01</span> Transferencia</p>
+          <h2 id="transfer-title">Una transferencia. Cero comisiones.</h2>
+          <p>Configura el envío y observa al agente negociar la cobertura en tiempo real.</p>
+        </div>
+
+        <div class="workspace-grid">
+          <form id="transfer-form" class="panel form-panel" novalidate>
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Nueva transferencia</p>
+                <h3>Configura tu envío</h3>
+              </div>
+              <span class="live-tag"><i aria-hidden="true"></i> Cotización instantánea</span>
+            </div>
+
+            <div class="field amount-field">
+              <div class="label-row"><label for="amount">Tú envías</label><span class="field-hint">Monto de la transferencia</span></div>
+              <div class="amount-input-wrap">
+                <span class="currency-symbol" id="source-symbol">$</span>
+                <input id="amount" name="amount" type="number" inputmode="decimal" min="1" step="0.01" value="500" autocomplete="off" aria-describedby="amount-help" />
+                <span class="currency-code" id="source-currency">USD</span>
+              </div>
+              <div class="field-foot">
+                <span id="amount-help">Mínimo $1 · máximo $25,000</span>
+                <div class="quick-amounts" role="group" aria-label="Montos rápidos">
+                  <button type="button" class="quick-amount" data-amount="100">$100</button>
+                  <button type="button" class="quick-amount is-active" data-amount="500">$500</button>
+                  <button type="button" class="quick-amount" data-amount="1000">$1,000</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="country-grid">
+              <div class="field">
+                <label for="source-country">Origen</label>
+                <div class="select-wrap">
+                  <select id="source-country" name="sourceCountry"></select>
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6 8 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </div>
+              </div>
+              <button type="button" class="swap-btn" id="swap-btn" aria-label="Invertir origen y destino">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7h11M12 4l3 3-3 3M16 13H5M8 10l-3 3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </button>
+              <div class="field">
+                <label for="destination-country">Destino</label>
+                <div class="select-wrap">
+                  <select id="destination-country" name="destinationCountry"></select>
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6 8 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="route-line" aria-live="polite">
+              <span id="route-from">🇺🇸 Estados Unidos</span>
+              <span class="route-track" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span id="route-to">🇨🇴 Colombia</span>
+            </div>
+
+            <div class="field">
+              <div class="label-row">
+                <label for="recipient-email">Correo del destinatario</label>
+                <span class="optional">opcional</span>
+              </div>
+              <input id="recipient-email" name="recipientEmail" type="email" placeholder="ana@ejemplo.com" autocomplete="email" />
+            </div>
+
+            <div class="receive-preview">
+              <div>
+                <span>Destinatario recibe</span>
+                <strong id="preview-receive">—</strong>
+                <small id="preview-rate">La tasa óptima se calcula al optimizar</small>
+              </div>
+              <span class="fee-badge">$0.00 fees</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="optimize-btn">
+              <span class="btn-spinner" id="optimize-spinner" hidden aria-hidden="true"></span>
+              <span id="optimize-label">Optimizar con Nexus AI</span>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+            <p class="form-note">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4.5" y="8.5" width="11" height="8" rx="2" stroke="currentColor" stroke-width="1.2" /><path d="M7 8.5V6.7a3 3 0 0 1 6 0v1.8" stroke="currentColor" stroke-width="1.2" /></svg>
+              La orden se autoriza en PayPal Sandbox. Nunca compartimos tus credenciales con el motor.
+            </p>
+          </form>
+
+          <div class="panel agent-panel">
+            <div class="panel-head agent-head">
+              <div class="agent-id">
+                <span class="agent-avatar" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="12.5" stroke="currentColor" stroke-opacity=".45" />
+                    <ellipse cx="16" cy="16" rx="12" ry="5" transform="rotate(-32 16 16)" stroke="currentColor" />
+                    <circle cx="16" cy="16" r="3.4" fill="currentColor" />
+                  </svg>
+                </span>
+                <div>
+                  <p class="panel-kicker">Agente autónomo</p>
+                  <h3>Nexus Agent <span class="version">v2.4</span></h3>
+                </div>
+              </div>
+              <div class="agent-state" id="agent-state" data-state="idle">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span id="agent-state-text">En espera</span>
+              </div>
+            </div>
+
+            <div class="terminal">
+              <div class="terminal-bar">
+                <div class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+                <span>nexus@liquidity-engine</span>
+                <span class="terminal-mode" id="terminal-mode">IDLE</span>
+              </div>
+              <div class="terminal-body" id="agent-log" role="log" aria-live="polite" aria-relevant="additions">
+                <div class="log-line muted">
+                  <span class="log-time">--:--:--</span><span class="log-glyph">›</span>
+                  <span class="log-text">Esperando una transferencia para optimizar.</span>
+                </div>
+                <div class="log-line muted">
+                  <span class="log-time">--:--:--</span><span class="log-glyph">›</span>
+                  <span class="log-text">Motor: <span id="terminal-bot-url">http://150.136.227.127:8501</span></span>
+                </div>
+              </div>
+              <div class="terminal-foot">
+                <span class="cursor" aria-hidden="true">▍</span>
+                <span id="agent-foot">Listo para ejecutar</span>
+                <span class="terminal-metric" id="agent-latency">— ms</span>
+              </div>
+            </div>
+
+            <div id="quote-panel" class="quote-panel" hidden>
+              <div class="quote-top">
+                <div>
+                  <span class="quote-eyebrow">Ruta optimizada</span>
+                  <h4 id="quote-route">—</h4>
+                </div>
+                <span class="quote-free">TARIFA $0.00</span>
+              </div>
+              <div class="quote-grid">
+                <div><span>Envías</span><strong id="quote-send">—</strong></div>
+                <div><span>Recibe</span><strong id="quote-receive">—</strong></div>
+                <div><span>Ahorras</span><strong id="quote-save" class="positive">—</strong></div>
+                <div><span>Tasa de cambio</span><strong id="quote-rate">—</strong></div>
+              </div>
+              <div class="quote-breakdown">
+                <div><span>Comisión PayPal</span><span><s id="quote-benchmark-fee">—</s> <b>$0.00</b></span></div>
+                <div><span>Spread FX</span><span><s id="quote-benchmark-fx">—</s> <b>0.00%</b></span></div>
+                <div><span>Cobertura del motor</span><span id="quote-coverage">—</span></div>
+                <div><span>Fuente de estrategia</span><span id="quote-source">—</span></div>
+              </div>
+              <div class="paypal-zone">
+                <div id="paypal-button-container" class="paypal-slot"></div>
+                <button type="button" id="demo-paypal-btn" class="paypal-demo-btn" hidden>
+                  <span class="pp-mark" aria-hidden="true">P</span>
+                  <span class="demo-label">Pagar con PayPal</span>
+                  <span class="demo-chip">DEMO</span>
+                </button>
+                <p id="paypal-hint" class="paypal-hint">Se abrirá el checkout seguro de PayPal Sandbox.</p>
+              </div>
+              <button type="button" class="quote-reset" id="quote-reset">Generar una nueva cotización</button>
+            </div>
+
+            <div id="agent-empty" class="agent-empty">
+              <div class="empty-orbit" aria-hidden="true"><span></span><i></i></div>
+              <p id="agent-empty-title">Aún no hay una ruta activa.</p>
+              <span id="agent-empty-text">Completa el formulario y el agente calculará la cobertura.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="activity" class="activity shell" aria-labelledby="activity-title">
+        <div class="section-head section-head-row">
+          <div>
+            <p class="kicker"><span>02</span> Actividad</p>
+            <h2 id="activity-title">Tu historial, sin letra pequeña.</h2>
+            <p>Comisiones absorbidas, ahorro real y cada corrida del agente.</p>
+          </div>
+          <div class="section-actions">
+            <button type="button" class="btn btn-ghost btn-sm" id="refresh-dashboard">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16 6.5A6.5 6.5 0 1 0 16.3 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /><path d="M16.5 3v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              Actualizar
+            </button>
+            <a class="btn btn-ghost btn-sm" href="/api/dashboard/export.csv" download>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v9M6.5 8.5 10 12l3.5-3.5M4 15.5h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              CSV
+            </a>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <article class="stat-card">
+            <div class="stat-icon stat-icon-blue" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 8.5 12 4l8 4.5M4 8.5v7L12 20l8-4.5v-7M4 8.5l8 4.5 8-4.5M12 13v7" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" /></svg>
+            </div>
+            <p>Transferencias</p>
+            <strong id="stat-count">—</strong>
+            <small id="stat-count-sub">optimizadas</small>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon stat-icon-violet" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 18V9M10 18V5M16 18v-6M22 18H2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /></svg>
+            </div>
+            <p>Volumen enviado</p>
+            <strong id="stat-volume">—</strong>
+            <small>en USD equivalentes</small>
+          </article>
+          <article class="stat-card stat-card-highlight">
+            <div class="stat-icon stat-icon-green" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="m3 17 5.5-6 3.5 3.5L21 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /><path d="M15.5 5H21v5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </div>
+            <p>Ahorro acumulado</p>
+            <strong id="stat-savings">—</strong>
+            <small><span id="stat-savings-pct">—</span> absorbido por el agente</small>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon stat-icon-cyan" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.4" /><path d="M12 7v10M9 9.5c0-1 1.2-1.7 3-1.7s3 .8 3 1.8c0 2.7-6 1.2-6 4 0 1.1 1.2 1.8 3 1.8s3-.7 3-1.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" /></svg>
+            </div>
+            <p>Comisiones pagadas</p>
+            <strong>$0.00</strong>
+            <small>100% absorbidas por Nexus</small>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="dashboard-side">
+            <div class="panel chart-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-kicker">Últimos 7 días</p>
+                  <h3>Ahorro absorbido</h3>
+                </div>
+                <span class="chart-total" id="chart-total">—</span>
+              </div>
+              <div id="savings-chart" class="chart" role="img" aria-label="Ahorro absorbido por día en los últimos 7 días"></div>
+              <div class="chart-legend">
+                <span><i class="legend-dot" aria-hidden="true"></i> Comisiones cubiertas</span>
+                <span id="chart-caption">—</span>
+              </div>
+            </div>
+
+            <div class="panel corridor-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-kicker">Rutas</p>
+                  <h3>Corredores principales</h3>
+                </div>
+                <span class="badge badge-muted" id="corridor-count">—</span>
+              </div>
+              <ul class="corridor-list" id="corridor-list">
+                <li class="corridor-empty">Aún sin corredores.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="panel ledger-panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Ledger</p>
+                <h3>Transferencias recientes</h3>
+              </div>
+              <span class="badge badge-muted" id="ledger-count">—</span>
+            </div>
+            <div class="table-wrap">
+              <table class="ledger">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Corredor</th>
+                    <th>Enviaste</th>
+                    <th>Recibió</th>
+                    <th>Comisión</th>
+                    <th>Ahorro</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="ledger-body">
+                  <tr><td colspan="7" class="table-loading">Cargando actividad…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <p class="demo-data-note" id="demo-data-note" hidden>
+          <span class="mini-dot" aria-hidden="true"></span>
+          El ledger incluye registros semilla de demostración marcados como <b>demo</b>. Desactívalos con <code>SEED_DEMO=0</code>.
+        </p>
+      </section>
+
+      <section id="how" class="how shell" aria-labelledby="how-title">
+        <div class="section-head section-head-center">
+          <p class="kicker"><span>03</span> Cómo funciona</p>
+          <h2 id="how-title">El agente trabaja mientras tú esperas.</h2>
+          <p>Tres movimientos entre la intención de pago y la autorización en PayPal.</p>
+        </div>
+        <div class="how-grid">
+          <article class="how-card">
+            <span class="step-no">01</span>
+            <div class="how-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.4" /><circle cx="12" cy="12" r="1.6" fill="currentColor" /></svg>
+            </div>
+            <h3>Escucha el motor</h3>
+            <p>Nexus verifica la salud de tu bot en <code>150.136.227.127:8501</code> y busca telemetría de estrategia. Si no hay feed JSON, activa un puente determinista.</p>
+            <div class="how-code"><span class="code-dot green"></span> GET /_stcore/health <b>200 OK</b></div>
+          </article>
+          <article class="how-card">
+            <span class="step-no">02</span>
+            <div class="how-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h13M14 4l3 3-3 3M20 17H7M10 14l-3 3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </div>
+            <h3>Cubre la tasa cambiaria</h3>
+            <p>El agente toma la tasa mid-market, calcula el spread tradicional y determina cuánta liquidez necesita para absorber la comisión del corredor.</p>
+            <div class="how-code"><span class="code-dot cyan"></span> yield <b id="how-yield">68 bps</b> · depth <b id="how-depth">$374K</b></div>
+          </article>
+          <article class="how-card">
+            <span class="step-no">03</span>
+            <div class="how-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 19 6v5c0 4.4-2.9 7.8-7 9-4.1-1.2-7-4.6-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" /><path d="m8.8 11.8 2.2 2.2 4.2-4.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </div>
+            <h3>Autoriza sin comisión</h3>
+            <p>La cotización se firma con HMAC, se convierte en una orden de PayPal Orders v2 y se captura. El usuario paga <strong>$0.00</strong> en tarifas.</p>
+            <div class="how-code"><span class="code-dot green"></span> fee <b>8.99% → $0.00</b></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="disclaimer shell" aria-label="Aviso de transparencia">
+        <div class="disclaimer-card">
+          <strong>Transparencia de hackathon</strong>
+          <p>
+            Nexus AI es una demo funcional para <em>Build What’s Next with PayPal and AI</em>. Los pagos se autorizan en
+            PayPal Sandbox: no se mueve dinero real. El motor remoto es una app Streamlit que no expone un feed JSON
+            público, por lo que el agente usa un puente determinista <b>claramente etiquetado</b> en cada cotización. El
+            ahorro compara contra una ruta transfronteriza de referencia (4.99% de comisión + 4.00% de spread FX) y no
+            constituye asesoría financiera.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer shell">
+      <div class="footer-brand">
+        <span class="brand-mark brand-mark-sm" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="16.5" stroke="currentColor" stroke-opacity=".38" />
+            <ellipse cx="20" cy="20" rx="16" ry="6.5" transform="rotate(-32 20 20)" stroke="currentColor" stroke-opacity=".9" />
+            <ellipse cx="20" cy="20" rx="16" ry="6.5" transform="rotate(58 20 20)" stroke="currentColor" stroke-opacity=".55" />
+            <circle cx="20" cy="20" r="4.4" fill="currentColor" />
+          </svg>
+        </span>
+        <div><strong>PayPal Nexus AI</strong><small>Construido para el hackathon de PayPal · 2026</small></div>
+      </div>
+      <div class="footer-meta">
+        <span>Node.js · Express · PayPal Orders v2</span>
+        <span class="footer-sep" aria-hidden="true"></span>
+        <span>Sandbox only</span>
+      </div>
+    </footer>
+
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="false"></div>
+    <div id="modal-root"></div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

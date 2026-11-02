@@ -1,0 +1,7 @@
+node_modules
+screenshots
+tests
+.chrome-*
+.npm-cache
+data/*.json
+*.log

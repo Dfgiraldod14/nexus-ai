@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+data/*.json
+data/*.tmp
+.vercel
+.chrome-*/
+.DS_Store
+Thumbs.db
+*.log
+coverage/
+screenshots/

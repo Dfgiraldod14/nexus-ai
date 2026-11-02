@@ -1,0 +1,21 @@
+{
+  "name": "paypal-nexus-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Autonomous AI agent that absorbs PayPal cross-border fees through liquidity micro-arbitrage.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "mock-bot": "node mock-bot/server.js",
+    "test": "node --test --experimental-test-isolation=none tests/agent.test.js tests/api.test.js",
+    "smoke": "node scripts/smoke.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

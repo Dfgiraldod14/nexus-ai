@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "framework": null,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/api", "destination": "/api/index?__route=" },
+    { "source": "/api/health", "destination": "/api/index?__route=health" },
+    { "source": "/api/config", "destination": "/api/index?__route=config" },
+    { "source": "/api/agent/status", "destination": "/api/index?__route=agent/status" },
+    { "source": "/api/agent/optimize", "destination": "/api/index?__route=agent/optimize" },
+    { "source": "/api/paypal/create-order", "destination": "/api/index?__route=paypal/create-order" },
+    { "source": "/api/paypal/capture-order", "destination": "/api/index?__route=paypal/capture-order" },
+    { "source": "/api/paypal/webhook", "destination": "/api/index?__route=paypal/webhook" },
+    { "source": "/api/dashboard", "destination": "/api/index?__route=dashboard" },
+    { "source": "/api/dashboard/transactions", "destination": "/api/index?__route=dashboard/transactions" },
+    { "source": "/api/dashboard/export.csv", "destination": "/api/index?__route=dashboard/export.csv" }
+  ]
+}
