@@ -47,6 +47,8 @@
       'ledger-body', 'ledger-count', 'demo-data-note', 'refresh-dashboard',
       'corridor-list', 'corridor-count',
       'toast-region', 'modal-root', 'how-yield', 'how-depth',
+      'bot-subsidy', 'yield-disclaimer', 'fee-badge', 'quote-fee-tag', 'quote-fee-label',
+      'quote-charged-fee', 'quote-total', 'quote-risk', 'quote-coverage-row',
     ];
     for (const id of ids) els[id] = document.getElementById(id);
   }
@@ -357,12 +359,25 @@
   // ------------------------------------------------------------- transfers
 
   function readInput() {
+    const subsidy = Boolean(els['bot-subsidy']?.checked);
     return {
       amount: Number(els.amount.value),
       sourceCountry: els['source-country'].value,
       destinationCountry: els['destination-country'].value,
       recipientEmail: els['recipient-email'].value.trim() || undefined,
+      // Opt-in: the disclaimer is shown next to the switch; enabling it is the acknowledgement.
+      botSubsidy: subsidy,
+      riskAcknowledged: subsidy,
     };
+  }
+
+  /** Keeps the switch, its risk disclaimer and the fee badge in sync. */
+  function updateYieldUI() {
+    const on = Boolean(els['bot-subsidy']?.checked);
+    els['yield-disclaimer'].hidden = !on;
+    els['yield-toggle']?.classList.toggle('is-on', on);
+    els['fee-badge'].dataset.state = on ? 'subsidized' : 'standard';
+    els['fee-badge'].textContent = on ? '$0.00 fees · subsidiado' : 'Comisión estándar';
   }
 
   function validateInput(input) {
@@ -419,13 +434,17 @@
 
       setAgentState('success', 'Cobertura activa');
       setTerminalMode('READY');
-      els['agent-foot'].textContent = 'Cobertura confirmada · tarifa al usuario $0.00';
+      els['agent-foot'].textContent = quote.botSubsidy
+        ? 'Cobertura simulada · tarifa al usuario $0.00 (no garantizada)'
+        : `Comisión estándar · ${fmtMoney(quote.fees.charged.amount, quote.sourceCurrency)}`;
       els['agent-latency'].textContent = `${quote.processingMs ?? '—'} ms`;
       els['agent-empty'].hidden = true;
 
       toast(
         'Ruta optimizada',
-        `Comisión absorbida: 100% (${fmtMoney(quote.savings.amount, quote.sourceCurrency)}).`,
+        quote.botSubsidy
+          ? `Comisión subsidiada por el bot (${fmtMoney(quote.savings.amount, quote.sourceCurrency)}). El trading conlleva riesgos.`
+          : `Comisión estándar: ${fmtMoney(quote.fees.charged.amount, quote.sourceCurrency)}. Activa el motor de rendimiento para subsidiarla.`,
         'success',
       );
 
@@ -510,7 +529,9 @@
 
     const summary = appendLog({
       glyph: '●',
-      text: `Comisión absorbida: 100% ($0.00 ${quote.sourceCurrency} en tarifas)`,
+      text: quote.botSubsidy
+        ? `Comisión subsidiada por el bot: $0.00 ${quote.sourceCurrency} en tarifas (no garantizado)`
+        : `Comisión estándar: ${fmtMoney(quote.fees.charged.amount, quote.sourceCurrency)} ${quote.sourceCurrency}`,
       tone: 'summary',
     });
     summary.classList.add('is-summary');
@@ -576,8 +597,22 @@
     els['quote-rate'].textContent = `${fmtRate(quote.exchangeRate)} ${quote.recipientCurrency}`;
     els['quote-rate'].title = `1 ${quote.sourceCurrency} = ${fmtNumber(quote.exchangeRate, 6)} ${quote.recipientCurrency}`;
 
+    const subsidized = Boolean(quote.botSubsidy);
+    els['quote-fee-tag'].textContent = subsidized
+      ? 'TARIFA $0.00'
+      : `COMISIÓN ${fmtMoney(quote.fees.charged.amount, quote.sourceCurrency)}`;
+    els['quote-fee-label'].textContent = subsidized ? 'Comisión PayPal (subsidiada)' : 'Comisión PayPal';
+    // Strike-through reference fee only when the yield engine actually waives it.
+    els['quote-benchmark-fee'].hidden = !subsidized;
     els['quote-benchmark-fee'].textContent = `-${fmtMoney(quote.fees.benchmark.paypalFee, quote.sourceCurrency)}`;
+    els['quote-charged-fee'].textContent = fmtMoney(quote.fees.charged.amount, quote.sourceCurrency);
+    els['quote-charged-fee'].classList.toggle('is-charged', !subsidized);
+    els['quote-fee-tag'].classList.toggle('is-standard', !subsidized);
     els['quote-benchmark-fx'].textContent = `-${fmtNumber(quote.fees.benchmark.fxPct, 2)}%`;
+    els['quote-coverage-row'].hidden = !subsidized;
+    els['quote-total'].textContent = fmtMoney(quote.totalCharge, quote.sourceCurrency, true);
+    els['quote-risk'].hidden = !subsidized;
+    els['quote-risk'].textContent = quote.subsidy?.disclaimer || '';
     els['quote-coverage'].textContent = `${quote.strategy.coveragePct}% · ${fmtUsdCompact(quote.strategy.capacityUsd)} de capacidad`;
     els['quote-source'].textContent = sourceLabel(quote.strategy.source);
     els['quote-source'].className = `source-${quote.strategy.source}`;
@@ -637,7 +672,7 @@
     els['optimize-spinner'].hidden = !running;
     els['optimize-label'].textContent = running ? 'Optimizando ruta…' : 'Optimizar con Nexus AI';
 
-    for (const field of [els.amount, els['source-country'], els['destination-country'], els['recipient-email']]) {
+    for (const field of [els.amount, els['source-country'], els['destination-country'], els['recipient-email'], els['bot-subsidy']]) {
       field.disabled = running;
     }
     $$('.quick-amount').forEach((button) => {
@@ -791,16 +826,17 @@
           <div class="modal-summary">
             <div class="modal-row"><span>Corredor</span><span>${escapeHtml(quote.corridor.from)} → ${escapeHtml(quote.corridor.to)}</span></div>
             <div class="modal-row"><span>Envías</span><span>${escapeHtml(fmtMoney(quote.amount, quote.sourceCurrency, true))}</span></div>
-            <div class="modal-row"><span>Comisión Nexus</span><span>$0.00</span></div>
+            <div class="modal-row"><span>Comisión Nexus${quote.botSubsidy ? ' (subsidiada)' : ''}</span><span>${escapeHtml(fmtMoney(quote.fees.charged.amount, quote.sourceCurrency))}</span></div>
             <div class="modal-row"><span>Destinatario recibe</span><span>${escapeHtml(fmtUnit(quote.recipientAmount, quote.recipientCurrency))}</span></div>
-            <div class="modal-row"><span>Ahorro absorbido</span><span>+${escapeHtml(fmtMoney(quote.savings.amount, quote.sourceCurrency))}</span></div>
+            ${quote.botSubsidy ? `<div class="modal-row"><span>Ahorro subsidiado por el bot</span><span>+${escapeHtml(fmtMoney(quote.savings.amount, quote.sourceCurrency))}</span></div>` : ''}
             ${quote.input.recipientEmail ? `<div class="modal-row"><span>Correo destino</span><span>${escapeHtml(quote.input.recipientEmail)}</span></div>` : ''}
-            <div class="modal-row is-total"><span>Total a pagar</span><span>${escapeHtml(fmtMoney(quote.amount, quote.sourceCurrency))}</span></div>
+            <div class="modal-row is-total"><span>Total a pagar</span><span>${escapeHtml(fmtMoney(quote.totalCharge, quote.sourceCurrency))}</span></div>
           </div>
+          ${quote.botSubsidy ? `<p class="quote-risk">${escapeHtml(quote.subsidy?.disclaimer || '')}</p>` : ''}
           <div class="modal-actions">
             <button type="button" class="btn btn-primary" id="demo-confirm" data-autofocus>
               <span class="btn-spinner" id="demo-spinner" hidden aria-hidden="true"></span>
-              <span id="demo-confirm-label">Simular pago de ${escapeHtml(fmtMoney(quote.amount, quote.sourceCurrency))}</span>
+              <span id="demo-confirm-label">Simular pago de ${escapeHtml(fmtMoney(quote.totalCharge, quote.sourceCurrency))}</span>
             </button>
             <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
           </div>
@@ -834,7 +870,7 @@
       } catch (error) {
         confirm.disabled = false;
         spinner.hidden = true;
-        label.textContent = `Simular pago de ${fmtMoney(quote.amount, quote.sourceCurrency)}`;
+        label.textContent = `Simular pago de ${fmtMoney(quote.totalCharge, quote.sourceCurrency)}`;
         toast('Pago no completado', error.message, 'error');
       }
     });
@@ -856,8 +892,10 @@
             <span class="receipt-check" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </span>
-            <h3>Transferencia optimizada</h3>
-            <p>Comisión absorbida: 100% · tarifa al usuario $0.00</p>
+            <h3>Transferencia ${transaction.botSubsidy ? 'optimizada' : 'completada'}</h3>
+            <p>${transaction.botSubsidy
+              ? 'Comisión subsidiada por el bot · tarifa al usuario $0.00 (no garantizada)'
+              : `Comisión estándar: ${escapeHtml(fmtMoney(transaction.fees.charged, transaction.sourceCurrency))}`}</p>
             <div class="receipt-amount">
               <span>Destinatario recibe</span>
               <strong>${escapeHtml(fmtUnit(quote.recipientAmount, quote.recipientCurrency))}</strong>
@@ -865,7 +903,7 @@
             <div class="receipt-meta">
               <div class="modal-row"><span>Estado</span><span>${escapeHtml(statusLabel(capture.status || transaction.status))}</span></div>
               <div class="modal-row"><span>Enviaste</span><span>${escapeHtml(fmtMoney(transaction.amount, transaction.sourceCurrency, true))}</span></div>
-              <div class="modal-row"><span>Ahorraste</span><span>+${escapeHtml(fmtMoney(transaction.savings.amount, transaction.savings.currency))}</span></div>
+              ${transaction.botSubsidy ? `<div class="modal-row"><span>Ahorraste</span><span>+${escapeHtml(fmtMoney(transaction.savings.amount, transaction.savings.currency))}</span></div>` : ''}
               <div class="modal-row"><span>Orden</span><span>${escapeHtml(transaction.orderId)}</span></div>
               <div class="modal-row"><span>Captura</span><span>${escapeHtml(transaction.captureId)}</span></div>
               <div class="modal-row"><span>Red</span><span>${isDemo ? 'DEMO · simulación' : 'PayPal Sandbox'}</span></div>
@@ -874,7 +912,9 @@
               <button type="button" class="btn btn-primary" id="receipt-done" data-autofocus>Nueva transferencia</button>
               <button type="button" class="btn btn-ghost" id="receipt-activity">Ver actividad</button>
             </div>
-            <p class="modal-secure">Nexus cubrió ${escapeHtml(fmtMoney(transaction.savings.amount, transaction.savings.currency))} de comisiones con liquidez del motor.</p>
+            <p class="modal-secure">${transaction.botSubsidy
+              ? `El bot subsidió ${escapeHtml(fmtMoney(transaction.savings.amount, transaction.savings.currency))} de comisiones. El trading conlleva riesgos; los rendimientos no están garantizados.`
+              : 'Motor de rendimiento desactivado: se aplicó la comisión estándar.'}</p>
           </div>
         </div>
       </div>`;
@@ -1107,7 +1147,7 @@
 
       const fee = document.createElement('td');
       fee.className = 'amount-cell';
-      fee.textContent = '$0.00';
+      fee.textContent = fmtMoney(tx.fees?.charged ?? 0, tx.sourceCurrency || 'USD');
 
       const savings = document.createElement('td');
       savings.className = 'savings-cell';
@@ -1270,6 +1310,12 @@
         onFormEdited();
       });
     });
+
+    els['bot-subsidy'].addEventListener('change', () => {
+      updateYieldUI();
+      onFormEdited();
+    });
+    updateYieldUI();
 
     els['swap-btn'].addEventListener('click', swapCountries);
     els['refresh-dashboard'].addEventListener('click', () => loadDashboard({ manual: true }));

@@ -30,6 +30,7 @@ test('optimizer quotes a zero-fee USD → COP transfer with a signed token', asy
     sourceCurrency: 'USD',
     targetCurrency: 'COP',
     recipientEmail: 'ana@example.com',
+    botSubsidy: true,
   });
 
   assert.equal(quote.fees.charged.amount, 0);
@@ -65,6 +66,7 @@ test('optimizer converts EUR → BRL and keeps the fee at zero', async () => {
     destinationCountry: 'BR',
     sourceCurrency: 'EUR',
     targetCurrency: 'BRL',
+    botSubsidy: true,
   });
 
   assert.equal(quote.sourceCurrency, 'EUR');
@@ -94,4 +96,46 @@ test('optimizer never trusts a client rate (rate comes from the strategy feed)',
   });
   assert.notEqual(quote.exchangeRate, 1);
   assert.ok(quote.recipientAmount > 1_000);
+});
+
+test('without the yield engine (default) the standard fee is charged and nothing is subsidized', async () => {
+  const quote = await agent.optimize({
+    amount: 500,
+    sourceCountry: 'US',
+    destinationCountry: 'CO',
+    sourceCurrency: 'USD',
+    targetCurrency: 'COP',
+  });
+
+  assert.equal(quote.botSubsidy, false);
+  assert.equal(quote.subsidy.enabled, false);
+  assert.equal(quote.subsidy.disclaimer, null);
+  assert.equal(quote.fees.charged.amount, 24.95);
+  assert.equal(quote.totalCharge, 524.95);
+  assert.equal(quote.savings.amount, 0);
+  assert.equal(quote.fees.absorbed.pct, 0);
+  assert.equal(quote.steps.length, 4);
+
+  const payload = verifyQuote(quote.token);
+  assert.equal(payload.botSubsidy, false);
+  assert.equal(payload.chargedFee, 24.95);
+  assert.equal(payload.absorbedUsd, 0);
+});
+
+test('with the yield engine the fee is $0.00, flagged non-guaranteed and carries the risk disclaimer', async () => {
+  const quote = await agent.optimize({
+    amount: 500,
+    sourceCountry: 'US',
+    destinationCountry: 'CO',
+    sourceCurrency: 'USD',
+    targetCurrency: 'COP',
+    botSubsidy: true,
+  });
+
+  assert.equal(quote.botSubsidy, true);
+  assert.equal(quote.subsidy.guaranteed, false);
+  assert.match(quote.subsidy.disclaimer, /trading conlleva riesgos/i);
+  assert.match(quote.disclaimer, /no están garantizados/i);
+  assert.equal(quote.totalCharge, 500);
+  assert.equal(verifyQuote(quote.token).chargedFee, 0);
 });

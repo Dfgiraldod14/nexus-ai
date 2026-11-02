@@ -4,7 +4,12 @@ const crypto = require('node:crypto');
 const config = require('../config');
 const logger = require('../lib/logger');
 const { AppError } = require('../lib/errors');
-const { paypalAmount } = require('../lib/money');
+const { paypalAmount, roundMoney } = require('../lib/money');
+
+/** Total the payer is charged: transfer amount + standard fee (0 when the yield engine subsidizes it). */
+function orderTotal(quote) {
+  return roundMoney(Number(quote.amount) + (Number(quote.chargedFee) || 0), quote.sourceCurrency);
+}
 
 /**
  * Minimal PayPal Orders v2 client (REST + OAuth2 client credentials).
@@ -128,7 +133,7 @@ function buildDescription(quote) {
 
 async function createOrder({ quote, mode }) {
   if (mode !== 'demo') assertConfigured();
-  const value = paypalAmount(quote.amount, quote.sourceCurrency);
+  const value = paypalAmount(orderTotal(quote), quote.sourceCurrency);
   const payload = {
     intent: 'CAPTURE',
     purchase_units: [
@@ -201,7 +206,7 @@ async function captureOrder({ orderId, quote, mode }) {
       status: 'COMPLETED',
       orderId,
       payerEmail: 'sandbox-buyer@nexus.demo',
-      amount: { value: quote.amount, currency: quote.sourceCurrency },
+      amount: { value: orderTotal(quote), currency: quote.sourceCurrency },
       capturedAt: new Date().toISOString(),
       mode: 'demo',
     };

@@ -65,6 +65,16 @@ function parseTransferInput(body = {}) {
     throw badRequest('INVALID_AMOUNT', `El monto en ${sourceCurrency} debe ser un número entero.`);
   }
 
+  // Opt-in "yield engine": only a literal boolean true enables it, and it
+  // requires an explicit acknowledgement of the trading-risk disclaimer.
+  const botSubsidy = body.botSubsidy === true;
+  if (botSubsidy && body.riskAcknowledged !== true) {
+    throw badRequest(
+      'RISK_NOT_ACKNOWLEDGED',
+      'Para activar el motor de rendimiento debes aceptar el aviso de riesgo del trading.',
+    );
+  }
+
   return {
     amount: roundMoney(amount, sourceCurrency),
     sourceCountry: sourceCountry.code,
@@ -72,6 +82,7 @@ function parseTransferInput(body = {}) {
     sourceCurrency,
     targetCurrency,
     recipientEmail: parseRecipientEmail(body.recipientEmail),
+    botSubsidy,
   };
 }
 

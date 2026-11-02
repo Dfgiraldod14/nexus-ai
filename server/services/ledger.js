@@ -227,6 +227,8 @@ function buildTransaction({ quote, capture, mode }) {
   const currency = quote.sourceCurrency;
   const decimals = currencyMeta(currency).decimals;
   const now = new Date().toISOString();
+  const subsidized = quote.botSubsidy === true;
+  const chargedFee = Number(quote.chargedFee) || 0;
 
   return {
     id: `TX-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`,
@@ -249,6 +251,8 @@ function buildTransaction({ quote, capture, mode }) {
       }`,
     },
     amount: roundMoney(quote.amount, currency),
+    totalCharged: roundMoney(Number(quote.amount) + chargedFee, currency),
+    botSubsidy: subsidized,
     amountUsd: round(Number(quote.amountUsd) || 0, 2),
     sourceCurrency: currency,
     recipientAmount: quote.recipientAmount,
@@ -258,16 +262,16 @@ function buildTransaction({ quote, capture, mode }) {
     payerEmail: maskEmail(capture.payerEmail),
     decimals,
     fees: {
-      charged: 0,
+      charged: chargedFee,
       currency,
       benchmarkTotal: quote.benchmark.total,
-      absorbedUsd: quote.absorbedUsd,
+      absorbedUsd: subsidized ? quote.absorbedUsd : 0,
     },
     savings: {
-      amount: quote.benchmark.total,
+      amount: subsidized ? quote.benchmark.total : 0,
       currency,
-      usd: quote.absorbedUsd,
-      pct: config.fees.totalPct,
+      usd: subsidized ? quote.absorbedUsd : 0,
+      pct: subsidized ? config.fees.totalPct : 0,
     },
     strategy: {
       source: quote.strategy.source,

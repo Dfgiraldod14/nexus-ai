@@ -207,7 +207,29 @@
                 <strong id="preview-receive">—</strong>
                 <small id="preview-rate">La tasa óptima se calcula al optimizar</small>
               </div>
-              <span class="fee-badge">$0.00 fees</span>
+              <span class="fee-badge" id="fee-badge" data-state="standard">Comisión estándar</span>
+            </div>
+
+            <div class="yield-toggle" id="yield-toggle">
+              <label class="yield-switch" for="bot-subsidy">
+                <span class="yield-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="8" width="14" height="10" rx="3" stroke="currentColor" stroke-width="1.5" /><path d="M12 8V5.2M12 5.2h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /><circle cx="9.3" cy="13" r="1.1" fill="currentColor" /><circle cx="14.7" cy="13" r="1.1" fill="currentColor" /><path d="M3 12v2M21 12v2M9.5 16h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /></svg>
+                </span>
+                <span class="yield-copy">
+                  <strong>Activar motor de rendimiento (Bot de Arbitraje)</strong>
+                  <small>Opcional · los rendimientos del bot subsidian la comisión</small>
+                </span>
+                <input type="checkbox" id="bot-subsidy" name="botSubsidy" role="switch" aria-describedby="yield-disclaimer" />
+                <span class="switch-track" aria-hidden="true"><i></i></span>
+              </label>
+              <div class="yield-disclaimer" id="yield-disclaimer" role="note" hidden>
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3 18 16.5H2L10 3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" /><path d="M10 8.5v3.4M10 14.2v.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                <p>
+                  <strong>Aviso de riesgo.</strong> El trading conlleva riesgos y puede generar pérdidas. Los rendimientos
+                  del bot no están garantizados y, en esta demo, son simulados. Al activar este interruptor aceptas que la
+                  comisión visible sea $0.00 solo si esos rendimientos la subsidian.
+                </p>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block" id="optimize-btn">
@@ -271,7 +293,7 @@
                   <span class="quote-eyebrow">Ruta optimizada</span>
                   <h4 id="quote-route">—</h4>
                 </div>
-                <span class="quote-free">TARIFA $0.00</span>
+                <span class="quote-free" id="quote-fee-tag">TARIFA $0.00</span>
               </div>
               <div class="quote-grid">
                 <div><span>Envías</span><strong id="quote-send">—</strong></div>
@@ -280,11 +302,13 @@
                 <div><span>Tasa de cambio</span><strong id="quote-rate">—</strong></div>
               </div>
               <div class="quote-breakdown">
-                <div><span>Comisión PayPal</span><span><s id="quote-benchmark-fee">—</s> <b>$0.00</b></span></div>
+                <div><span id="quote-fee-label">Comisión PayPal</span><span><s id="quote-benchmark-fee">—</s> <b id="quote-charged-fee">$0.00</b></span></div>
                 <div><span>Spread FX</span><span><s id="quote-benchmark-fx">—</s> <b>0.00%</b></span></div>
-                <div><span>Cobertura del motor</span><span id="quote-coverage">—</span></div>
+                <div id="quote-coverage-row"><span>Cobertura del motor</span><span id="quote-coverage">—</span></div>
                 <div><span>Fuente de estrategia</span><span id="quote-source">—</span></div>
+                <div class="is-total"><span>Total a pagar</span><strong id="quote-total">—</strong></div>
               </div>
+              <p class="quote-risk" id="quote-risk" role="note" hidden></p>
               <div class="paypal-zone">
                 <div id="paypal-button-container" class="paypal-slot"></div>
                 <button type="button" id="demo-paypal-btn" class="paypal-demo-btn" hidden>

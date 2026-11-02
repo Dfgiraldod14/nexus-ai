@@ -19,7 +19,22 @@ function fmtNumber(value, maxDecimals = 2) {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: maxDecimals }).format(value);
 }
 
-function buildSteps({ strategyResult, pair, rateSource, coveragePct, benchmarkTotal, quoteId, startedAt }) {
+const RISK_DISCLAIMER =
+  'Aviso de riesgo: el trading conlleva riesgos y puede generar pérdidas. Los rendimientos del bot no están garantizados ' +
+  'y, en esta demo, son simulados salvo que el feed del bot esté expuesto. Si el rendimiento no alcanza, la comisión ' +
+  'subsidiada no está asegurada.';
+
+function buildSteps({
+  strategyResult,
+  pair,
+  rateSource,
+  coveragePct,
+  benchmarkTotal,
+  chargedFee,
+  subsidy,
+  quoteId,
+  startedAt,
+}) {
   let cursor = startedAt;
   const steps = [];
   const rateSourceLabel =
@@ -52,17 +67,25 @@ function buildSteps({ strategyResult, pair, rateSource, coveragePct, benchmarkTo
     'Calculando cobertura de tasa cambiaria',
     `${pair.from}/${pair.to} ${fmtNumber(pair.rate, 4)} · spread 0.00% · mid-market · ${rateSourceLabel}`,
   );
-  push(
-    'liquidity',
-    'Enrutando micro-arbitraje de liquidez',
-    `Yield ${strategy.yieldBps} bps · profundidad $${fmtNumber(strategy.liquidityUsd, 0)} · cobertura ${coveragePct}%`,
-  );
-  push(
-    'absorb',
-    'Absorbiendo comisiones de PayPal',
-    `${fmtNumber(benchmarkTotal, 2)} ${pair.sourceCurrency} cubiertos · tarifa al usuario 0.00`,
-    coveragePct < 99.5 ? 'warn' : 'ok',
-  );
+  if (subsidy) {
+    push(
+      'liquidity',
+      'Enrutando micro-arbitraje de liquidez',
+      `Yield ${strategy.yieldBps} bps · profundidad $${fmtNumber(strategy.liquidityUsd, 0)} · cobertura ${coveragePct}%`,
+    );
+    push(
+      'absorb',
+      'Subsidiando comisiones con rendimientos del bot',
+      `${fmtNumber(benchmarkTotal, 2)} ${pair.sourceCurrency} cubiertos (no garantizado) · tarifa al usuario 0.00`,
+      coveragePct < 99.5 ? 'warn' : 'ok',
+    );
+  } else {
+    push(
+      'fee',
+      'Aplicando comisión estándar',
+      `${fmtNumber(chargedFee, 2)} ${pair.sourceCurrency} · motor de rendimiento desactivado`,
+    );
+  }
   push(
     'sign',
     'Firmando cotización de pago',
@@ -90,10 +113,16 @@ async function optimize(input) {
   const paypalFee = roundMoney((input.amount * config.fees.crossBorderPct) / 100, input.sourceCurrency);
   const fxFee = roundMoney((input.amount * config.fees.fxSpreadPct) / 100, input.sourceCurrency);
   const benchmarkTotal = roundMoney(paypalFee + fxFee, input.sourceCurrency);
-  const absorbedUsd = round(benchmarkTotal / sourceRate, 2);
+  const subsidy = Boolean(input.botSubsidy);
+  // Without the yield engine the user pays the standard PayPal commission;
+  // with it, that commission is subsidized by (non-guaranteed) bot returns.
+  const chargedFee = subsidy ? 0 : paypalFee;
+  const savingsAmount = subsidy ? benchmarkTotal : 0;
+  const absorbedUsd = subsidy ? round(benchmarkTotal / sourceRate, 2) : 0;
 
   const capacityUsd = round((strategy.liquidityUsd * strategy.yieldBps) / 10_000, 2);
-  const rawCoverage = absorbedUsd > 0 ? (capacityUsd / absorbedUsd) * 100 : 100;
+  const subsidyUsd = round(benchmarkTotal / sourceRate, 2);
+  const rawCoverage = subsidyUsd > 0 ? (capacityUsd / subsidyUsd) * 100 : 100;
   const coveragePct = round(Math.max(0, Math.min(100, rawCoverage)), 1);
 
   const provided = new Set(strategy.providedRates || []);
@@ -121,14 +150,18 @@ async function optimize(input) {
     rateSource,
     coveragePct,
     benchmarkTotal,
+    chargedFee,
+    subsidy,
     quoteId: id,
     startedAt: requestedAt,
   });
 
-  const summary =
-    `Ruta óptima ${input.sourceCountry}→${input.destinationCountry}: el motor cubre ` +
-    `${fmtNumber(benchmarkTotal, 2)} ${input.sourceCurrency} (${coveragePct}%) de comisiones. ` +
-    `Tarifa Nexus: 0.00.`;
+  const summary = subsidy
+    ? `Ruta óptima ${input.sourceCountry}→${input.destinationCountry}: el motor cubre ` +
+      `${fmtNumber(benchmarkTotal, 2)} ${input.sourceCurrency} (${coveragePct}%) de comisiones. ` +
+      `Tarifa Nexus: 0.00. Los rendimientos del bot no están garantizados.`
+    : `Ruta ${input.sourceCountry}→${input.destinationCountry}: motor de rendimiento desactivado. ` +
+      `Comisión estándar: ${fmtNumber(chargedFee, 2)} ${input.sourceCurrency}.`;
 
   const payload = {
     v: 1,
@@ -145,6 +178,8 @@ async function optimize(input) {
     exchangeRate,
     recipientAmount,
     amountUsd,
+    botSubsidy: subsidy,
+    chargedFee,
     benchmark: {
       paypalFee,
       fxFee,
@@ -195,8 +230,21 @@ async function optimize(input) {
     exchangeRate,
     recipientAmount,
     recipientCurrency: input.targetCurrency,
+    botSubsidy: subsidy,
+    totalCharge: roundMoney(input.amount + chargedFee, input.sourceCurrency),
+    subsidy: {
+      enabled: subsidy,
+      guaranteed: false,
+      simulated: source !== 'bot',
+      coveragePct,
+      disclaimer: subsidy ? RISK_DISCLAIMER : null,
+    },
     fees: {
-      charged: { amount: 0, currency: input.sourceCurrency, pct: 0 },
+      charged: {
+        amount: chargedFee,
+        currency: input.sourceCurrency,
+        pct: subsidy ? 0 : config.fees.crossBorderPct,
+      },
       benchmark: {
         paypalPct: config.fees.crossBorderPct,
         fxPct: config.fees.fxSpreadPct,
@@ -207,17 +255,17 @@ async function optimize(input) {
         currency: input.sourceCurrency,
       },
       absorbed: {
-        amount: benchmarkTotal,
+        amount: savingsAmount,
         currency: input.sourceCurrency,
         usd: absorbedUsd,
-        pct: 100,
+        pct: subsidy ? 100 : 0,
       },
     },
     savings: {
-      amount: benchmarkTotal,
+      amount: savingsAmount,
       currency: input.sourceCurrency,
       usd: absorbedUsd,
-      pct: config.fees.totalPct,
+      pct: subsidy ? config.fees.totalPct : 0,
     },
     strategy: {
       source,
@@ -238,8 +286,9 @@ async function optimize(input) {
     steps,
     summary,
     simulated: source !== 'bot',
-    disclaimer:
-      'Demo hackathon: las comisiones se calculan contra una ruta tradicional de referencia. Los rendimientos del motor son simulados salvo que el feed del bot esté expuesto.',
+    disclaimer: subsidy
+      ? `Demo hackathon: las comisiones se calculan contra una ruta tradicional de referencia. ${RISK_DISCLAIMER}`
+      : 'Demo hackathon: motor de rendimiento desactivado; se aplica la comisión estándar de PayPal.',
     processingMs: Date.now() - requestedAt,
   };
 }

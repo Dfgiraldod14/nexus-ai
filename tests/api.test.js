@@ -62,6 +62,8 @@ test('full demo checkout flow: optimize → create → capture → dashboard', a
       sourceCountry: 'US',
       destinationCountry: 'CO',
       recipientEmail: 'ana@example.com',
+      botSubsidy: true,
+      riskAcknowledged: true,
     }),
   });
   assert.equal(optimized.status, 200);
@@ -161,4 +163,58 @@ test('serves the SPA with security headers and a JSON 404 for unknown APIs', asy
   assert.equal(missing.status, 404);
   assert.equal(missing.data.ok, false);
   assert.equal(missing.data.error.code, 'NOT_FOUND');
+});
+
+test('yield engine is opt-in: default charges the standard fee, opting in requires the risk acknowledgement', async () => {
+  // Default (switch off): standard fee is added to the order total.
+  const standard = await request('/api/agent/optimize', {
+    method: 'POST',
+    body: JSON.stringify({ amount: 200, sourceCountry: 'US', destinationCountry: 'MX' }),
+  });
+  assert.equal(standard.status, 200);
+  const quote = standard.data.quote;
+  assert.equal(quote.botSubsidy, false);
+  assert.equal(quote.fees.charged.amount, 9.98);
+  assert.equal(quote.totalCharge, 209.98);
+  assert.equal(quote.savings.amount, 0);
+
+  const created = await request('/api/paypal/create-order', {
+    method: 'POST',
+    body: JSON.stringify({ quoteId: quote.id, quoteToken: quote.token }),
+  });
+  assert.equal(created.status, 201);
+  assert.equal(created.data.order.amount.value, 209.98);
+
+  const captured = await request('/api/paypal/capture-order', {
+    method: 'POST',
+    body: JSON.stringify({ orderId: created.data.order.id, quoteToken: quote.token }),
+  });
+  assert.equal(captured.status, 200);
+  assert.equal(captured.data.transaction.botSubsidy, false);
+  assert.equal(captured.data.transaction.fees.charged, 9.98);
+  assert.equal(captured.data.transaction.savings.usd, 0);
+
+  // Opting in without acknowledging the trading-risk disclaimer is rejected.
+  const noAck = await request('/api/agent/optimize', {
+    method: 'POST',
+    body: JSON.stringify({ amount: 200, sourceCountry: 'US', destinationCountry: 'MX', botSubsidy: true }),
+  });
+  assert.equal(noAck.status, 400);
+  assert.equal(noAck.data.error.code, 'RISK_NOT_ACKNOWLEDGED');
+
+  // Opting in with the acknowledgement: fee is $0.00 and the disclaimer is present.
+  const subsidized = await request('/api/agent/optimize', {
+    method: 'POST',
+    body: JSON.stringify({
+      amount: 200,
+      sourceCountry: 'US',
+      destinationCountry: 'MX',
+      botSubsidy: true,
+      riskAcknowledged: true,
+    }),
+  });
+  assert.equal(subsidized.status, 200);
+  assert.equal(subsidized.data.quote.fees.charged.amount, 0);
+  assert.equal(subsidized.data.quote.totalCharge, 200);
+  assert.ok(subsidized.data.quote.subsidy.disclaimer);
 });
