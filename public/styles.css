@@ -3459,3 +3459,264 @@ svg {
     transition: none;
   }
 }
+
+/* Indicador de rendimiento simulado (solo con el motor activado) */
+.yield-return {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid rgba(46, 230, 166, 0.26);
+  border-radius: 9px;
+  background: rgba(46, 230, 166, 0.07);
+  color: var(--green);
+}
+
+.yield-return svg {
+  width: 13px;
+  height: 13px;
+}
+
+.yield-return-text {
+  display: grid;
+  line-height: 1.15;
+}
+
+.yield-return-text b {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.yield-return-text em {
+  color: var(--muted-2);
+  font-size: 8.5px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.yield-return.is-updating {
+  animation: yield-pulse 0.9s ease-out;
+}
+
+@keyframes yield-pulse {
+  from { box-shadow: 0 0 0 0 rgba(46, 230, 166, 0.4); }
+  to { box-shadow: 0 0 0 9px rgba(46, 230, 166, 0); }
+}
+
+.yield-switch {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.yield-copy {
+  flex-basis: 150px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yield-return.is-updating {
+    animation: none;
+  }
+}
+
+/* Fila "Rendimiento mensual del saldo" del desglose */
+.quote-breakdown > div.quote-yield-row > span:first-child {
+  color: #b4c4dc;
+}
+
+.quote-breakdown .quote-yield-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid rgba(46, 230, 166, 0.24);
+  border-radius: 7px;
+  background: rgba(46, 230, 166, 0.07);
+  color: var(--green);
+  font-weight: 600;
+}
+
+.quote-breakdown .quote-yield-value::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  background: currentColor;
+  clip-path: polygon(0 100%, 0 70%, 35% 35%, 55% 55%, 100% 0, 100% 40%, 55% 95%, 35% 75%, 12% 100%);
+}
+
+.quote-breakdown .quote-yield-value.is-partial {
+  border-color: rgba(255, 190, 92, 0.32);
+  background: rgba(255, 190, 92, 0.08);
+  color: var(--amber);
+}
+
+/* ───────── Billetera PayPal (dentro del formulario) ───────── */
+.wallet-card {
+  position: relative;
+  margin: 0 0 18px;
+  padding: 14px 16px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(61, 220, 255, 0.2);
+  border-radius: 20px;
+  background:
+    radial-gradient(360px 150px at 0% 0%, rgba(61, 220, 255, 0.16), transparent 70%),
+    radial-gradient(300px 140px at 100% 100%, rgba(46, 230, 166, 0.13), transparent 70%),
+    linear-gradient(165deg, rgba(14, 21, 37, 0.92), rgba(7, 11, 21, 0.95));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.wallet-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.wallet-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.wallet-caption {
+  color: var(--muted-2);
+  font-size: 9.5px;
+}
+
+.wallet-demo {
+  padding: 2px 6px;
+  border: 1px solid rgba(139, 140, 255, 0.4);
+  border-radius: 6px;
+  color: var(--violet);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+
+.wallet-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+}
+
+.wallet-amount-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.wallet-amount {
+  min-width: 0;
+  color: var(--text);
+  font-size: clamp(24px, 6vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.wallet-amount small {
+  color: var(--muted);
+  font-size: 0.42em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.wallet-mask {
+  letter-spacing: 0.12em;
+}
+
+.wallet-eye {
+  display: grid;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--cyan);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.wallet-eye:hover {
+  border-color: rgba(61, 220, 255, 0.5);
+  background: rgba(61, 220, 255, 0.12);
+}
+
+.wallet-eye:active {
+  transform: scale(0.95);
+}
+
+.wallet-eye:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.wallet-eye svg {
+  width: 21px;
+  height: 21px;
+}
+
+.wallet-eye .eye-closed,
+.wallet-card.is-masked .wallet-eye .eye-open {
+  display: none;
+}
+
+.wallet-card.is-masked .wallet-eye .eye-closed {
+  display: block;
+}
+
+.wallet-yield {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid rgba(46, 230, 166, 0.34);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(46, 230, 166, 0.16), rgba(61, 220, 255, 0.07));
+  box-shadow: 0 0 26px -12px rgba(46, 230, 166, 0.7);
+  color: var(--green);
+}
+
+.wallet-yield svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet-yield-copy {
+  display: grid;
+  line-height: 1.2;
+}
+
+.wallet-yield-copy em {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-style: normal;
+  letter-spacing: 0.04em;
+}
+
+.wallet-yield-copy strong {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wallet-sub {
+  margin: 9px 0 0;
+  color: var(--muted-2);
+  font-size: 9px;
+  line-height: 1.5;
+}

@@ -150,6 +150,27 @@
               <span class="live-tag"><i aria-hidden="true"></i> Cotización instantánea</span>
             </div>
 
+            <div class="wallet-card" id="wallet-card" role="group" aria-label="Billetera PayPal (demostración)">
+              <div class="wallet-top">
+                <p class="wallet-label">Billetera PayPal <span class="wallet-demo">DEMO</span></p>
+                <span class="wallet-caption">Saldo de PayPal</span>
+              </div>
+              <div class="wallet-main">
+                <div class="wallet-amount-row">
+                  <strong class="wallet-amount" id="wallet-balance" aria-live="polite">$1,250.00 <small>USD</small></strong>
+                  <button type="button" class="wallet-eye" id="wallet-eye" aria-pressed="false" aria-controls="wallet-balance" aria-label="Ocultar saldo" title="Ocultar saldo">
+                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" /></svg>
+                    <svg class="eye-closed" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 3l18 18M10.6 5.7A10.8 10.8 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a17 17 0 0 1-3.1 3.9M6.6 6.9A16.6 16.6 0 0 0 2 12s3.6 6.5 10 6.5c1.5 0 2.9-.3 4.1-.8M9.9 9.9a3 3 0 0 0 4.2 4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  </button>
+                </div>
+                <div class="wallet-yield" id="wallet-yield" title="Rendimiento simulado del bot, sincronizado con el feed de la estrategia. No garantizado.">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  <span class="wallet-yield-copy"><em>Rendimiento mensual</em><strong id="wallet-yield-value">—</strong></span>
+                </div>
+              </div>
+              <p class="wallet-sub">CDT inteligente · rendimiento simulado, no garantizado. Saldo de demostración, no es tu saldo real de PayPal.</p>
+            </div>
+
             <div class="field amount-field">
               <div class="label-row"><label for="amount">Tú envías</label><span class="field-hint">Monto de la transferencia</span></div>
               <div class="amount-input-wrap">
@@ -218,6 +239,10 @@
                 <span class="yield-copy">
                   <strong>Activar motor de rendimiento (Bot de Arbitraje)</strong>
                   <small>Opcional · los rendimientos del bot subsidian la comisión</small>
+                </span>
+                <span class="yield-return" id="yield-return" hidden>
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 11.5 6 7.5l2.5 2.5L14 4.5M10.5 4.5H14V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  <span class="yield-return-text"><b id="yield-return-value">—</b><em>este mes · simulado</em></span>
                 </span>
                 <input type="checkbox" id="bot-subsidy" name="botSubsidy" role="switch" aria-describedby="yield-disclaimer" />
                 <span class="switch-track" aria-hidden="true"><i></i></span>
@@ -304,7 +329,7 @@
               <div class="quote-breakdown">
                 <div><span id="quote-fee-label">Comisión PayPal</span><span><s id="quote-benchmark-fee">—</s> <b id="quote-charged-fee">$0.00</b></span></div>
                 <div><span>Spread FX</span><span><s id="quote-benchmark-fx">—</s> <b>0.00%</b></span></div>
-                <div id="quote-coverage-row"><span>Cobertura del motor</span><span id="quote-coverage">—</span></div>
+                <div id="quote-coverage-row" class="quote-yield-row"><span>Rendimiento mensual del saldo</span><span id="quote-coverage" class="quote-yield-value">—</span></div>
                 <div><span>Fuente de estrategia</span><span id="quote-source">—</span></div>
                 <div class="is-total"><span>Total a pagar</span><strong id="quote-total">—</strong></div>
               </div>

@@ -11,6 +11,7 @@
     quote: null,
     dashboard: null,
     status: null,
+    walletHidden: false,
     running: false,
     statusInFlight: false,
     sdkCurrency: null,
@@ -49,6 +50,8 @@
       'toast-region', 'modal-root', 'how-yield', 'how-depth',
       'bot-subsidy', 'yield-disclaimer', 'fee-badge', 'quote-fee-tag', 'quote-fee-label',
       'quote-charged-fee', 'quote-total', 'quote-risk', 'quote-coverage-row',
+      'yield-return', 'yield-return-value',
+      'wallet-card', 'wallet-balance', 'wallet-eye', 'wallet-yield-value',
     ];
     for (const id of ids) els[id] = document.getElementById(id);
   }
@@ -378,6 +381,77 @@
     els['yield-toggle']?.classList.toggle('is-on', on);
     els['fee-badge'].dataset.state = on ? 'subsidized' : 'standard';
     els['fee-badge'].textContent = on ? '$0.00 fees · subsidiado' : 'Comisión estándar';
+    updateYieldReturn();
+  }
+
+  // ---------------------------------------------------------------- wallet
+
+  const WALLET_DEMO_BALANCE_USD = 1250; // demo balance: not read from PayPal
+  const WALLET_PREF_KEY = 'nexus.wallet.hidden';
+
+  function readWalletHidden() {
+    try {
+      return localStorage.getItem(WALLET_PREF_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function renderWallet() {
+    const hidden = state.walletHidden;
+    const balance = els['wallet-balance'];
+    balance.innerHTML = hidden
+      ? '<span class="wallet-mask">••••••</span> <small>USD</small>'
+      : `${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(WALLET_DEMO_BALANCE_USD)} <small>USD</small>`;
+    els['wallet-card'].classList.toggle('is-masked', hidden);
+    const eye = els['wallet-eye'];
+    eye.setAttribute('aria-pressed', String(hidden));
+    const label = hidden ? 'Mostrar saldo' : 'Ocultar saldo';
+    eye.setAttribute('aria-label', label);
+    eye.title = label;
+  }
+
+  function toggleWalletVisibility() {
+    state.walletHidden = !state.walletHidden;
+    try {
+      localStorage.setItem(WALLET_PREF_KEY, state.walletHidden ? '1' : '0');
+    } catch {
+      /* storage unavailable: the preference just won't persist */
+    }
+    renderWallet();
+  }
+
+  /** Same simulated monthly return as the rest of the UI (strategy feed bps → %). */
+  function updateWalletYield() {
+    const bps = Number(state.status?.strategy?.yieldBps);
+    els['wallet-yield-value'].textContent =
+      Number.isFinite(bps) && bps > 0 ? `+${fmtNumber(bps / 100, 2)}% mes` : '—';
+  }
+
+  /**
+   * Simulated monthly return shown next to the switch (only while it is on).
+   * Derived from the strategy feed's yield (bps → %), never a promise: it is
+   * labelled "simulado" and the risk disclaimer sits right below it.
+   */
+  function updateYieldReturn() {
+    const badge = els['yield-return'];
+    if (!badge) return;
+    const on = Boolean(els['bot-subsidy']?.checked);
+    badge.hidden = !on;
+    if (!on) return;
+
+    const bps = Number(state.status?.strategy?.yieldBps);
+    const value = els['yield-return-value'];
+    const next = Number.isFinite(bps) && bps > 0 ? `+${fmtNumber(bps / 100, 2)}%` : '—';
+    if (value.textContent !== next) {
+      value.textContent = next;
+      badge.classList.remove('is-updating');
+      void badge.offsetWidth; // restart the subtle pulse
+      badge.classList.add('is-updating');
+    }
+    badge.title = Number.isFinite(bps) && bps > 0
+      ? `Rendimiento simulado a partir de ${bps} bps del feed del motor. Ilustrativo: el trading conlleva riesgos y no está garantizado.`
+      : 'Rendimiento simulado no disponible todavía.';
   }
 
   function validateInput(input) {
@@ -613,7 +687,16 @@
     els['quote-total'].textContent = fmtMoney(quote.totalCharge, quote.sourceCurrency, true);
     els['quote-risk'].hidden = !subsidized;
     els['quote-risk'].textContent = quote.subsidy?.disclaimer || '';
-    els['quote-coverage'].textContent = `${quote.strategy.coveragePct}% · ${fmtUsdCompact(quote.strategy.capacityUsd)} de capacidad`;
+    // Simulated monthly return from the bot feed (bps → %). Coverage stays available
+    // in the tooltip and surfaces inline only when the engine cannot fully cover the fee.
+    const yieldBps = Number(quote.strategy.yieldBps);
+    const monthly = Number.isFinite(yieldBps) && yieldBps > 0 ? `+${fmtNumber(yieldBps / 100, 2)}% mes` : '—';
+    const partial = quote.strategy.coveragePct < 99.5;
+    els['quote-coverage'].textContent = partial ? `${monthly} · cubre ${quote.strategy.coveragePct}%` : monthly;
+    els['quote-coverage'].classList.toggle('is-partial', partial);
+    els['quote-coverage'].title =
+      `Rendimiento simulado (${yieldBps} bps del feed del motor), no garantizado. ` +
+      `Cobertura de la comisión: ${quote.strategy.coveragePct}% · ${fmtUsdCompact(quote.strategy.capacityUsd)} de capacidad.`;
     els['quote-source'].textContent = sourceLabel(quote.strategy.source);
     els['quote-source'].className = `source-${quote.strategy.source}`;
     els['quote-source'].title = `${quote.strategy.label} · ${quote.strategy.endpoint || quote.strategy.botUrl}`;
@@ -1190,6 +1273,9 @@
   }
 
   function applyStatus(status) {
+    state.status = status;
+    updateYieldReturn();
+    updateWalletYield();
     const pill = els['engine-pill'];
     pill.classList.remove('is-warn', 'is-offline');
 
@@ -1316,6 +1402,10 @@
       onFormEdited();
     });
     updateYieldUI();
+
+    state.walletHidden = readWalletHidden();
+    renderWallet();
+    els['wallet-eye'].addEventListener('click', toggleWalletVisibility);
 
     els['swap-btn'].addEventListener('click', swapCountries);
     els['refresh-dashboard'].addEventListener('click', () => loadDashboard({ manual: true }));
